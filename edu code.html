@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Sheet (Landscape)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .controls {
+            margin: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .coupon-container {
+            width: 297mm; /* A4 Landscape Width */
+            height: 210mm; /* A4 Landscape Height */
+            background: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2mm;
+            padding: 0mm;
+            margin-top: 10mm;
+            margin-bottom: 10mm;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .coupon {
+            width: 100%;
+            height: 100%;
+            background: url('images/Background.png') no-repeat center center;
+            background-size: contain;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 10px;
+            position: relative;
+        }
+        .coupon .code {
+            position: absolute;
+            font-weight: bold;
+            color: black;
+            font-size: 20px;
+            left: 137px;
+            top: 182px;
+            z-index: 15;
+        }
+
+        /* 🔹 প্রিন্ট করার সময় ব্যাকগ্রাউন্ড ঠিক রাখার জন্য */
+        @media print {
+            body {
+                background-color: white !important;
+            }
+            .coupon-container {
+                width: 297mm;
+                height: 210mm;
+                margin: 10mm auto;
+                box-shadow: none;
+                page-break-before: always;
+            }
+            .coupon {
+                background: url('images/Background.png') no-repeat center center !important;
+                background-size: contain !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <label>Left: <input type="number" id="left" value="137"></label>
+        <label>Top: <input type="number" id="top" value="182"></label>
+        <label>Font Size: <input type="number" id="fontSize" value="20"></label>
+        <label>Z-Index: <input type="number" id="zIndex" value="15"></label>
+        <button onclick="updateCouponStyle()">Apply</button>
+        <button onclick="printCoupons()">Print</button>
+        <button onclick="downloadWordFile()">Download Word File</button>
+    </div>
+
+    <div class="coupon-container" id="couponContainer"></div>
+
+    <script>
+        let generatedCodes = [];
+
+        function generateCoupon() {
+            let randomNumber = Math.floor(1000000 + Math.random() * 9000000);
+            let code = "EDU" + randomNumber;
+            generatedCodes.push(code);
+            return code;
+        }
+
+        function createCoupons() {
+            let container = document.getElementById("couponContainer");
+            container.innerHTML = "";
+            generatedCodes = [];
+
+            for (let i = 0; i < 16; i++) {
+                let coupon = document.createElement("div");
+                coupon.className = "coupon";
+
+                let codeDiv = document.createElement("div");
+                codeDiv.className = "code";
+                codeDiv.textContent = generateCoupon();
+
+                coupon.appendChild(codeDiv);
+                container.appendChild(coupon);
+            }
+            updateCouponStyle();
+        }
+
+        function updateCouponStyle() {
+            let left = document.getElementById("left").value + "px";
+            let top = document.getElementById("top").value + "px";
+            let fontSize = document.getElementById("fontSize").value + "px";
+            let zIndex = document.getElementById("zIndex").value;
+
+            let codes = document.querySelectorAll(".coupon .code");
+
+            codes.forEach(code => {
+                code.style.left = left;
+                code.style.top = top;
+                code.style.fontSize = fontSize;
+                code.style.zIndex = zIndex;
+            });
+        }
+
+        function printCoupons() {
+            window.print();
+        }
+
+        function downloadWordFile() {
+            let content = "<html><head><meta charset='UTF-8'></head><body><h1>Coupon Codes</h1><ul>";
+
+            generatedCodes.forEach(code => {
+                content += `<li>${code}</li>`;
+            });
+
+            content += "</ul></body></html>";
+
+            let blob = new Blob([content], { type: "application/msword" });
+            saveAs(blob, "coupon-codes.doc");
+        }
+
+        createCoupons();
+    </script>
+
+</body>
+</html>
